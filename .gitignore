@@ -34,3 +34,69 @@ vignettes/*.pdf
 
 # Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
 rsconnect/
+
+#A basic guide towards the classification algorithms in R:
+install.packages("randomForest")
+data <- iris
+str(iris)
+#Splitting the dataset into training and testing
+set.seed(2)
+library("caret")
+
+install.packages("caret")
+ sample <- createDataPartition(data$Species, p=0.8, list = FALSE)
+head(sample) 
+
+train <- data[sample,]
+test <- data[-sample,] 
+str((train))
+str(test)
+
+#Applying various predictive models:
+#RandoM Forest
+library(randomForest)
+rf1 <- randomForest(Species ~ ., data = train, method = "class")
+prf1 <- predict(rf1, test)
+tab <- table(prf1, test$Species)
+accuracy <- (function(x)
+ return(sum(diag(x))/sum(x)))
+accuracy(tab)
+
+#SVM
+library(e1071)
+svm1 <- svm(formula = Species ~ ., data = train, scale = TRUE, kernel = "sigmoid", type = "C-classification" )
+pred2 <- predict(svm1, test)
+tab1 <- table(pred2, test$Species)
+accuracy(tab1)
+
+#Logistic Regression (Very Poor accuracy)
+glm1 <- glm(formula = Species ~., data = train, family = binomial,)
+pred3 <- predict(glm1, type = "response")
+pred_act <- exp(pred3)
+tab3 <- table(pred_act, train$Species)
+accuracy(tab3)
+
+#Decision tree: using RPRT
+library(party)
+classification_tree <- ctree(formula = Species ~. , data = train)
+pred_tree <- predict(classification_tree , test)
+tab_tree <- table(pred_tree , test$Species)
+accuracy(tab_tree)
+plot(classification_tree)
+
+#KNN
+library (class)
+CL <- train[,5]
+pred <- test[,5]
+
+normalise <- function(x){    #Normalizing the quantities
+  return(x - min((x))/max(x) - min(x))
+}
+
+train_norm <- as.data.frame(lapply(train[,c(1,2,3,4)], normalise))
+test_norm <- as.data.frame(lapply(test[,c(1,2,3,4)], normalise))
+
+KNN_class <- knn(train_norm , test_norm, cl = CL, k = 3)
+attributes(.Last.value)
+tab_KNN <- table(KNN_class, pred) 
+accuracy(tab_KNN)
