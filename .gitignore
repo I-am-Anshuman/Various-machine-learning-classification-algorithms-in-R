@@ -76,7 +76,7 @@ pred_act <- exp(pred3)
 tab3 <- table(pred_act, train$Species)
 accuracy(tab3)
 
-#Decision tree: using RPRT
+#Decision tree: using RPART
 library(party)
 classification_tree <- ctree(formula = Species ~. , data = train)
 pred_tree <- predict(classification_tree , test)
